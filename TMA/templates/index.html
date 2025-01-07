@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пароль</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</head>
+<body>
+    <div class="container">
+        <form action="/check_password" method="post">
+            <input type="password" id="input1" class="password-input" maxlength="1" name="password" autofocus>
+            <input type="password" id="input2" class="password-input" maxlength="1" name="password">
+            <input type="password" id="input3" class="password-input" maxlength="1" name="password">
+            <input type="password" id="input4" class="password-input" maxlength="1" name="password">
+            <input type="submit" style="display: none;" />  <!-- Скрытая кнопка для отправки формы -->
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
+
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    gap: 10px;
+}
+
+.password-input {
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+    text-align: center;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+</style>
+<script>
+   document.querySelectorAll('.password-input').forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+        // Переход к следующему полю ввода
+        if (index < 3 && input.value.length === 1) {
+            document.querySelector(`#input${index + 2}`).focus();
+        }
+
+        // Когда все поля заполнены, собираем пароль и отправляем форму
+        if (Array.from(document.querySelectorAll('.password-input')).every(input => input.value.length === 1)) {
+            // Собираем пароль, соединяя значения из всех полей
+            let password = Array.from(document.querySelectorAll('.password-input'))
+                                 .map(input => input.value)  // Получаем все введенные символы
+                                 .join('');  // Объединяем их в одну строку
+
+            // Отправляем собранный пароль на сервер
+            fetch('/check_password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',  // Указываем, что данные в формате формы
+                },
+                body: `password=${password}`  // Отправляем строку пароля
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Если авторизация успешна, перенаправляем на страницу preloader
+                    window.location.href = "/preloader";
+                } else {
+                    // Если ошибка (неправильный пароль), выводим сообщение
+                    alert('Неверный пароль');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        }
+    });
+});
+
+
+
+</script>

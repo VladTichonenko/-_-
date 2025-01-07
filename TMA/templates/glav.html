@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой баланс</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #dba6f2, #a050d0);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .balance-info {
+            font-size: 20px;
+        }
+
+        .channels {
+            margin: 20px;
+            font-size: 18px;
+        }
+
+        .channel {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .channel-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 15px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(135deg, #c267ea, #a050d0);
+            color: white;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer i {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 12px;
+        }
+
+        /* Новый прямоугольник с правилами */
+        .rules-box {
+            background: linear-gradient(135deg, #c267ea, #a050d0);
+            color: #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .rules-box:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #c267ea, #a050d0);
+            color:#fefefe;
+            margin: 5% auto;
+            padding: 28px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .modal-body {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="balance-info">
+            <h1>Мой баланс: {{ points }}</h1>
+            <p>id: {{ user_id }}</p>
+        </div>
+    </div>
+
+    <!-- Новый прямоугольник с правилами -->
+    <div class="rules-box" id="rulesBox">
+        <h3>Правила</h3>
+    </div>
+
+    <!-- Мои каналы -->
+    <div class="channels">
+        <h2>Мои каналы:</h2>
+        {% if channels %}
+            {% for channel in channels %}
+            <div class="channel">
+                <div class="channel-icon"></div>
+                <p>{{ channel }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>Вы не подписаны на каналы.</p>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <div>
+            <i class="fas fa-home"></i>
+            <p>Главная</p>
+        </div>
+        <div>
+            <i class="fas fa-gift"></i>
+            <p>Призы</p>
+        </div>
+        <div>
+            <i class="fas fa-plus-circle"></i>
+            <p>Больше баллов</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">Правила:</div>
+            <div class="modal-body">
+                <p>Реакция: +5</p>
+                <p>Комментарий: +15</p>
+                <p>Реферальная программа: +20</p>
+                <p>Подписка: +25</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Получаем модальное окно
+        var modal = document.getElementById("myModal");
+
+        // Получаем элемент, который открывает модальное окно
+        var rulesBox = document.getElementById("rulesBox");
+
+        // Получаем элемент <span>, который закрывает модальное окно
+        var span = document.getElementsByClassName("close")[0];
+
+        // Когда пользователь кликает на "Правила", открывается модальное окно
+        rulesBox.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // Когда пользователь кликает на <span> (крестик), закрывается модальное окно
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Когда пользователь кликает в любом месте за пределами модального окна, оно тоже закрывается
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>
