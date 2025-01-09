@@ -120,6 +120,33 @@ last_message_id = {}
 # Очередь для обработки сообщений
 message_queue = asyncio.Queue()
 
+async def get_previous_message_reactions(channel):
+    async with client:
+        messages = await client.get_messages(channel, limit=2)  # Получаем два последних сообщения
+
+        if len(messages) > 1:
+            previous_msg_id = messages[1].id  # Получаем ID предыдущего сообщения
+            print(f"Используемый previous_msg_id: {previous_msg_id}")
+
+            # Получение списка реакций
+            result = await client(functions.messages.GetMessagesReactionsRequest(
+                peer=channel,
+                id=[previous_msg_id]
+            ))
+
+            # Подсчет общего количества реакций
+            total_reactions = 0
+            for update in result.updates:
+                if isinstance(update, telethon_types.UpdateMessageReactions):
+                    total_reactions += sum(reaction.count for reaction in update.reactions.results)
+            print(f"Общее количество реакций на предыдущем сообщении: {total_reactions}")
+
+            return total_reactions
+        else:
+            print("Нет предыдущего сообщения.")
+            return None
+
+
 async def get_total_reactions(channel):
     async with client:
         messages = await client.get_messages(channel, limit=1)
@@ -163,7 +190,7 @@ async def process_queue():
         if chat_id not in last_message_id or message_id != last_message_id[chat_id]:
             last_message_id[chat_id] = message_id
             print(f"Новый пост в {message.chat.title}: {message.text}")
-            reactions = await get_total_reactions(chat_id)
+            reactions = await get_previous_message_reactions(chat_id)
             if reactions is not None:
                 print(f"Общее количество реакций на последнем сообщении: {reactions}")
 
