@@ -21,7 +21,7 @@ client = TelegramClient(phone, api_id, api_hash)
 
 def get_all_user_ids(channel_id):
     try:
-        conn = sqlite3.connect('subscribers.db')  # Подключаемся к базе данных
+        conn = sqlite3.connect('bot_database.db')  # Подключаемся к базе данных
         cursor = conn.cursor()
 
         cursor.execute('SELECT user_id FROM subscribers WHERE channel_id = ?', (channel_id,))  # Извлекаем все user_id для данного channel_id
@@ -41,7 +41,7 @@ def get_all_user_ids(channel_id):
 
 def update_user_score(user_id, points):
     try:
-        conn = sqlite3.connect('user_stat.db')  # Подключаемся к базе данных
+        conn = sqlite3.connect('bot_database.db')  # Подключаемся к базе данных
         cursor = conn.cursor()
 
         # Проверяем, существует ли запись для данного user_id
@@ -70,7 +70,7 @@ def update_user_score(user_id, points):
 
 def get_random_user_id(channel_id):
     try:
-        conn = sqlite3.connect('subscribers.db')  # Подключаемся к базе данных
+        conn = sqlite3.connect('bot_database.db')  # Подключаемся к базе данных
         cursor = conn.cursor()
 
         cursor.execute('SELECT user_id FROM subscribers WHERE channel_id = ?', (channel_id,))  # Извлекаем все user_id для данного channel_id
@@ -96,10 +96,10 @@ def get_random_user_id(channel_id):
 channels_db = []
 
 def load_channels_from_db():
-    conn = sqlite3.connect('channels.db')
+    conn = sqlite3.connect('bot_database.db')
     cursor = conn.cursor()
 
-    cursor.execute('SELECT id, name, channel_link FROM channels')
+    cursor.execute('SELECT channel_id, channel_name, channel_url FROM channels')
     rows = cursor.fetchall()
 
     for row in rows:
